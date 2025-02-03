@@ -1,3 +1,4 @@
+// model/blockchain.js
 var addressUtilities = require('../utils/address');
 var arrayUtilities = require('../utils/array');
 var validator = require('../utils/validator');

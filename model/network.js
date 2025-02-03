@@ -1,3 +1,4 @@
+// model/network.js
 var addressUtilities = require('../utils/address');
 var arrayUtilities = require('../utils/array');
 

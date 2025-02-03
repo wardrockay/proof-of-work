@@ -1,3 +1,4 @@
+// utils/chain.js
 var validatorUtilities = require('./validator');
 
 var ChainUtilities = function ChainUtilities(){
