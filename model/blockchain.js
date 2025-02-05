@@ -44,7 +44,7 @@ var blockchain = function blockchain(){
     var lastBlock = self.chain[self.chain.length-1];
     var transaction = newTransaction(0,miner,1);
     var proof = validator.generateProof(transaction);
-    var previousHash = validator.calculateHash(lastBlock.transaction[0]);
+    var previousHash = validator.calculateHash(lastBlock);
     return newBlock(proof, previousHash);
   }
 
