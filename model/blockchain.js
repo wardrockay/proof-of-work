@@ -24,7 +24,7 @@ var blockchain = function blockchain(){
     */
     self.chain = [];
     self.currentTransactions = [];
-    self.newBlock(100, 1);
+    self.newBlock(100, "GENESIS_HASH");
   }
 
   function getChain(){
@@ -77,9 +77,34 @@ var blockchain = function blockchain(){
     return transaction;
   }
 
-  function checkChain(){
+  function checkChain() {
     
-  }
+    if (self.chain.length < 2) {
+        return true; // Si la blockchain ne contient que le bloc genesis, elle est valide.
+    }
+
+    for (let i = 1; i < self.chain.length; i++) {
+        const currentBlock = self.chain[i];
+        const previousBlock = self.chain[i - 1];
+
+        // Vérifier que le hash du bloc précédent correspond bien au previousHash du bloc actuel
+        const recalculatedPreviousHash = validator.calculateHash(previousBlock);
+        if (currentBlock.previousHash !== recalculatedPreviousHash) {
+            console.error(`Erreur: Le hash du bloc ${i - 1} ne correspond pas au previousHash du bloc ${i}`);
+            return false;
+        }
+
+        // Vérifier la validité de la preuve de travail
+        if (!validator.isValidProof(currentBlock.proof, previousBlock.proof)) {
+            console.error(`Erreur: La preuve de travail du bloc ${i} est invalide.`);
+            return false;
+        }
+    }
+
+    console.log("La blockchain est valide.");
+    return true;
+}
+
 
 
   if(blockchain.caller != blockchain.getInstance){
