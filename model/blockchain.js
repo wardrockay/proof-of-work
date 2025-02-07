@@ -1,4 +1,5 @@
 // model/blockchain.js
+const { json } = require('body-parser');
 var addressUtilities = require('../utils/address');
 var arrayUtilities = require('../utils/array');
 var validator = require('../utils/validator');
@@ -13,6 +14,7 @@ var blockchain = function blockchain(){
   this.getChain = getChain;
   this.checkChain = checkChain;
   this.mine = mine;
+  this.difficultie = 4;
 
   this.chain;
   this.currentTransactions;
@@ -24,7 +26,8 @@ var blockchain = function blockchain(){
     */
     self.chain = [];
     self.currentTransactions = [];
-    self.newBlock(100, "GENESIS_HASH");
+    const timestamp = new Date().getTime()
+    self.newBlock(timestamp, 100,"GENESIS_HASH");
   }
 
   function getChain(){
@@ -40,21 +43,25 @@ var blockchain = function blockchain(){
     *  creates a new transaction with "sender" 0 to show that
     *  this is a mined block.
     */
-
+    const timestamp = new Date().getTime()
     var lastBlock = self.chain[self.chain.length-1];
     var transaction = newTransaction(0,miner,1);
-    var proof = validator.generateProof(transaction);
     var previousHash = validator.calculateHash(lastBlock);
-    return newBlock(proof, previousHash);
+    var proof = validator.generateProof(self.chain.length+1, self.currentTransactions, previousHash, timestamp, this.difficultie);
+
+    console.log(previousHash);
+    
+    
+    return newBlock(timestamp, proof, previousHash);
   }
 
-  function newBlock(proof, previousHash){
+  function newBlock(timestamp, proof, previousHash){
     /*
     *  Generate a new blocks and adds it to the chain
     */
     var block = {
       "index": self.chain.length+1,
-      "timestamp": new Date().getTime(),
+      "timestamp": timestamp,
       "transaction": self.currentTransactions,
       "proof": proof,
       "previousHash": previousHash
@@ -91,18 +98,31 @@ var blockchain = function blockchain(){
         const recalculatedPreviousHash = validator.calculateHash(previousBlock);
         if (currentBlock.previousHash !== recalculatedPreviousHash) {
             console.error(`Erreur: Le hash du bloc ${i - 1} ne correspond pas au previousHash du bloc ${i}`);
+            
             return false;
         }
 
         // Vérifier la validité de la preuve de travail
-        if (!validator.isValidProof(currentBlock.proof, previousBlock.proof)) {
-            console.error(`Erreur: La preuve de travail du bloc ${i} est invalide.`);
-            return false;
+        if (!validator.isValidProof(currentBlock.index, currentBlock.transaction, currentBlock.previousHash, currentBlock.timestamp, currentBlock.proof.proof, this.difficultie)) {
+            console.error({
+              "result": false,
+              "message": `Erreur: La preuve de travail du bloc ${currentBlock.index} est invalide.`,
+              currentBlock
+            });
+            return {
+              "result": false,
+              "message": `Erreur: La preuve de travail du bloc ${currentBlock.index} est invalide.`,
+              currentBlock
+            };
         }
     }
 
     console.log("La blockchain est valide.");
-    return true;
+    return {
+      "result": true,
+      "message": "La blockchain est valide.",
+      "chaine": self.chain
+    };
 }
 
 

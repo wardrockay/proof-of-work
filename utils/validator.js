@@ -12,6 +12,10 @@ var ValidatorHandler = function ValidatorHandler() {
 
   function calculateHash(block) {
     if (!block || typeof block !== "object" || !block.index || !block.timestamp || !block.proof || !block.previousHash) {
+      console.log({
+        block,
+        
+      })
       return false;
     }
 
@@ -24,27 +28,38 @@ var ValidatorHandler = function ValidatorHandler() {
   }
 
 
-  function generateProof(transaction) {
-    if (!transaction || transaction.sender === undefined || transaction.receiver === undefined || transaction.amount === undefined) {
-      return false;
-    }
-    if (transaction.sender === 0) {
-      return generateIntegerFromAddress(transaction.receiver) * parseFloat(transaction.amount);
-    }
-    return Math.abs(generateIntegerFromAddress(transaction.sender) - generateIntegerFromAddress(transaction.receiver)) * parseFloat(transaction.amount);
+  function generateProof(index, transactions, previousHash, timestamp, difficulty) {
+    let nonce = 0;
+    let hash = "";
+    let prefix = "0".repeat(difficulty);
+
+    do {
+      nonce++;
+      let data = index + previousHash + JSON.stringify(transactions) + timestamp + nonce;
+      hash = crypto.createHash('sha256').update(data).digest('hex');
+    } while (!hash.startsWith(prefix));
+
+    console.log('---generateProof---');
+    console.log({ index, proof: nonce, hash });   
+
+    return { proof: nonce, hash };
   }
 
-  function isValidProof(currentProof, previousProof) {
-    /*
-    * Vérifie que la preuve de travail est valide en respectant une règle de difficulté.
-    * Exemple simple : concaténer les preuves et vérifier que le hash commence par "0000".
-    */
-    const crypto = require("crypto");
-    const guess = `${currentProof}${previousProof}`;
-    const guessHash = crypto.createHash("sha256").update(guess).digest("hex");       
 
-    return guessHash.startsWith("0000"); // Exige que le hash commence par "0000"
-}
+  function isValidProof(index, transactions, previousHash, timestamp, nonce, difficulty) {
+    const prefix = "0".repeat(difficulty);
+    const blockData = index + previousHash + JSON.stringify(transactions) + timestamp + nonce;
+    const guessHash = crypto.createHash("sha256").update(blockData).digest("hex");
+
+    console.log('---isValidProof---');
+    console.log({
+      'prefix': prefix,
+      'block data': blockData,
+      'isValid': guessHash.startsWith(prefix)
+    });
+    
+    return guessHash.startsWith(prefix); // Vérifie si le hash respecte la difficulté
+  }
 
 
   function generateHashFromString(string) {
