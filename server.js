@@ -19,14 +19,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/', router);
 
-
+/*
+//TEST CODE
 blockchain.newTransaction(12, 45, 200)
-
-
 blockchain.mine("192.168.1.1")
 blockchain.newTransaction(12, 45, 12)
 blockchain.mine("192.168.1.1")
-blockchain.checkChain()
+blockchain.checkChain() //should be true
+
+//altère un bloc
+blockchain.chain[1].transaction[1] = { sender: 'fake', receiver: '0.0.0.0', amount: 9999 };
+blockchain.checkChain() //should be false
+
+*/
 
 router.get('/chain', function (req, res, next) {
   res.send(blockchain.getChain());

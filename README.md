@@ -1,15 +1,34 @@
-### Blockchain.js
 
-* **newBlock** (proof, previousHash) => block
-  Generate a new block given the already calculated proof and the previous Hash and returns the obtained block
-* **newTransaction** (sender, receiver, amount) => transaction
-  Generate a new transaction and adds it to the currentTransactions array which will be added in the next new block
-* **mine** (miner) => block
-  Mines a new block, assigns it to the miner and generate the associated block
+# 🎥 Lien de la vidéo Démo de l'implémentation
+https://drive.google.com/file/d/1WNJmUxsYIZsRW2QjcYjIVbOG-I_o_YJ0/view?usp=sharing 
 
-### Network.js
+# 🔍 Analyse Critique du Proof of Work
 
-* **registerNode** (address) => boolean
-  Enable the insertion of new nodes and returns if the address has been added (cannot add twice the same address)
-* **nodeExists** (address) => boolean
-  Fetches in the nodes array if the provided node already exists and returns this information
+## 🚨 Problèmes Identifiés dans l’Implémentation Actuelle
+
+L’implémentation actuelle de la fonction `generateProof` dans `validator.js` présente plusieurs failles et ne respecte pas les principes fondamentaux d’un **Proof of Work (PoW)** sécurisé. Voici les principaux problèmes :
+
+### 1️⃣ **Absence de Complexité et de Difficulté Ajustable**
+Le Proof of Work repose sur la résolution d’un problème mathématique complexe nécessitant des ressources computationnelles. Dans cette implémentation :
+- La preuve (`proof`) est simplement un calcul basé sur une différence d’adresses et un montant.
+- Il n’y a **aucun** mécanisme de difficulté ajustable, comme dans Bitcoin où un hachage doit être inférieur à un certain seuil (cible).
+
+### 2️⃣ **Manipulation Facile et Manque de Sécurité**
+- L’algorithme utilise `generateIntegerFromAddress`, qui extrait les chiffres d’une adresse. Cela signifie qu’un attaquant peut manipuler son adresse pour produire une preuve spécifique.
+- Le résultat peut être facilement prédit et contrôlé, contrairement à un vrai PoW qui repose sur un processus **aléatoire et imprévisible**.
+
+### 3️⃣ **Pas d’Utilisation de Hashing Cryptographique**
+Un système PoW robuste doit s’appuyer sur des **fonctions de hachage sécurisées** comme SHA-256 ou Keccak.
+- Ici, la preuve repose sur des calculs arithmétiques de valeurs entières, ce qui est **trivial à inverser**.
+- Un attaquant peut générer une preuve valide **sans effort**, ce qui supprime tout intérêt au PoW.
+
+### 4️⃣ **Absence de Mécanisme d’Incrémentation (Nonce)**
+Un vrai PoW repose sur l’ajout d’un **nonce**, une valeur arbitraire modifiée en boucle jusqu’à ce que le hachage respecte une condition spécifique.
+- Ici, il n’y a **pas de nonce**, donc aucune possibilité d’augmenter la difficulté du travail nécessaire pour générer une preuve.
+
+## ⚠️ Risques de Sécurité
+
+- **Attaques par prédiction** : Un attaquant peut choisir des adresses spécifiques pour manipuler la preuve et contourner toute vérification.
+- **Absence de résistance aux attaques Sybil** : Sans réelle consommation de ressources, un attaquant peut générer un grand nombre de preuves en un instant.
+- **Aucune garantie d’unicité** : Plusieurs transactions peuvent produire des preuves identiques.
+- **Pas de protection contre les attaques par collision** : Un même ensemble d’entrées produit toujours le même résultat, ce qui facilite l’exploitation.
