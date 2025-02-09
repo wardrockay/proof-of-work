@@ -109,11 +109,7 @@ var blockchain = function blockchain(){
               "message": `Erreur: La preuve de travail du bloc ${currentBlock.index} est invalide.`,
               currentBlock
             });
-            return {
-              "result": false,
-              "message": `Erreur: La preuve de travail du bloc ${currentBlock.index} est invalide.`,
-              currentBlock
-            };
+            return [];
         }
     }
 
